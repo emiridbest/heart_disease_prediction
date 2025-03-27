@@ -17,7 +17,7 @@ This is the result of the model using several predictive algorithm using pyspark
 - **Precision**: 0.5054185262135001
 - **Recall**: 0.5071868583162218
 - **F1 Score**: 0.499997534525449
-- 
+  
 ![randomForest](assets/randomForest.png)
 
 ## Gradient Boosted Trees Performance:
@@ -26,7 +26,7 @@ This is the result of the model using several predictive algorithm using pyspark
 - **Precision**: 0.5160243767024099
 - **Recall**: 0.5160848733744011
 - **F1 Score**: 0.5160485825240928
-- 
+ 
 ![gradientBoostedTrees](assets/gradientBoostedTrees.png)
 
 
