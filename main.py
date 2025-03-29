@@ -17,7 +17,6 @@ df = data.withColumn("AgeCategory",
     .otherwise(4)
 )
 
-# Categorical columns for encoding
 
 
 # Continuous columns for scaling
@@ -199,3 +198,69 @@ for model_name, results in model_comparison.items():
     print(f"\n{model_name} Performance:")
     for metric, value in results["Metrics"].items():
         print(f"{metric}: {value}")
+
+
+
+
+# print learning curves for each model
+def plot_learning_curves(classifiers, data):
+    """Plot learning curves for multiple classifiers"""
+    
+    train_sizes = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
+    
+    # Dictionary to store results
+    learning_curves = {name: {"train_sizes": train_sizes, "train_scores": [], "test_scores": []} 
+                      for name in classifiers.keys()}
+    
+    train_set, test_set = data.randomSplit([0.8, 0.2], seed=42)
+    
+    # For each classifier
+    for name, classifier in classifiers.items():
+        print(f"\nGenerating learning curve for {name}")
+        
+        # For each training size
+        for size in train_sizes:
+            train_subset, _ = train_set.randomSplit([size, 1.0-size], seed=42)
+            
+            # Train model on subset
+            model = classifier.fit(train_subset)
+            
+            # Make predictions on training and test data
+            train_preds = model.transform(train_subset)
+            test_preds = model.transform(test_set)
+            
+
+            evaluator = BinaryClassificationEvaluator(labelCol="stroke", metricName="areaUnderROC")
+            train_score = evaluator.evaluate(train_preds)
+            test_score = evaluator.evaluate(test_preds)
+            
+            # Store results
+            learning_curves[name]["train_scores"].append(train_score)
+            learning_curves[name]["test_scores"].append(test_score)
+    
+    # Plot learning curves
+    plt.figure(figsize=(12, 8))
+    
+    for name, curves in learning_curves.items():
+        plt.plot(curves["train_sizes"], curves["train_scores"], 'o-', label=f"{name} (Training)")
+        plt.plot(curves["train_sizes"], curves["test_scores"], 's--', label=f"{name} (Test)")
+    
+    plt.title("Learning Curves")
+    plt.xlabel("Training Set Size (fraction)")
+    plt.ylabel("AUC Score")
+    plt.grid(True)
+    plt.legend(loc="best")
+    plt.tight_layout()
+    plt.show()
+    
+    return learning_curves
+
+
+learning_curves = plot_learning_curves(classifiers, final_data)
+
+for model_name, curves in learning_curves.items():
+    print(f"\n{model_name} Learning Curve Details:")
+    print(f"Training sizes: {curves['train_sizes']}")
+    print(f"Training scores: {curves['train_scores']}")
+    print(f"Test scores: {curves['test_scores']}")
+
